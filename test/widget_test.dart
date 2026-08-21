@@ -26,4 +26,30 @@ void main() {
     expect(find.text('RECENTLY PLAYED'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('explore discovery tabs update on a narrow screen', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(const WorldRadioApp());
+    await tester.tap(find.text('Explore'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tune into anywhere.'), findsOneWidget);
+    expect(find.text('TOKYO'), findsOneWidget);
+    expect(find.text('SRI LANKA'), findsOneWidget);
+
+    await tester.tap(find.text('Genres'));
+    await tester.pumpAndSettle();
+    expect(find.text('ELECTRONIC'), findsOneWidget);
+
+    await tester.tap(find.text('Languages'));
+    await tester.pumpAndSettle();
+    expect(find.text('Japanese'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

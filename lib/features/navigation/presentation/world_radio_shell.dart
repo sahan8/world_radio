@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../explore/presentation/explore_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../home/presentation/widgets/mini_player.dart';
 import '../../placeholder/presentation/placeholder_screen.dart';
@@ -15,12 +16,7 @@ class _WorldRadioShellState extends State<WorldRadioShell> {
   int _selectedIndex = 0;
   static const _screens = [
     HomeScreen(),
-    PlaceholderScreen(
-      title: 'EXPLORE',
-      eyebrow: 'FIND YOUR FREQUENCY',
-      description: 'Countries, cultures, and sounds will live here.',
-      icon: Icons.travel_explore,
-    ),
+    ExploreScreen(),
     PlaceholderScreen(
       title: 'FAVORITES',
       eyebrow: 'YOUR SIGNALS',
