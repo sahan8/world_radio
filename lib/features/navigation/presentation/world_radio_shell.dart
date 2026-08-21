@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../home/presentation/home_screen.dart';
+import '../../home/presentation/widgets/mini_player.dart';
 import '../../placeholder/presentation/placeholder_screen.dart';
 
 class WorldRadioShell extends StatefulWidget {
@@ -12,12 +14,7 @@ class WorldRadioShell extends StatefulWidget {
 class _WorldRadioShellState extends State<WorldRadioShell> {
   int _selectedIndex = 0;
   static const _screens = [
-    PlaceholderScreen(
-      title: 'WORLD RADIO',
-      eyebrow: 'LIVE FROM EVERYWHERE',
-      description: 'Discover radio beyond borders.',
-      icon: Icons.public,
-    ),
+    HomeScreen(),
     PlaceholderScreen(
       title: 'EXPLORE',
       eyebrow: 'FIND YOUR FREQUENCY',
@@ -44,37 +41,43 @@ class _WorldRadioShellState extends State<WorldRadioShell> {
       bottom: false,
       child: IndexedStack(index: _selectedIndex, children: _screens),
     ),
-    bottomNavigationBar: DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.borderSubtle)),
-      ),
-      child: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) =>
-            setState(() => _selectedIndex = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+    bottomNavigationBar: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const MiniPlayer(),
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: AppColors.borderSubtle)),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.explore_outlined),
-            selectedIcon: Icon(Icons.explore),
-            label: 'Explore',
+          child: NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) =>
+                setState(() => _selectedIndex = index),
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.explore_outlined),
+                selectedIcon: Icon(Icons.explore),
+                label: 'Explore',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.favorite_border),
+                selectedIcon: Icon(Icons.favorite),
+                label: 'Favorites',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon: Icon(Icons.settings),
+                label: 'Settings',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.favorite_border),
-            selectedIcon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }

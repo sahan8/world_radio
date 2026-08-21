@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
+
+class CountryCard extends StatelessWidget {
+  const CountryCard({
+    required this.name,
+    required this.countryCode,
+    required this.stationCount,
+    super.key,
+  });
+  final String name;
+  final String countryCode;
+  final String stationCount;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 148,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadii.medium),
+      border: Border.all(color: AppColors.borderSubtle),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 44,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppRadii.small),
+          ),
+          child: Text(
+            countryCode,
+            style: Theme.of(context).textTheme.labelLarge
+                ?.copyWith(color: AppColors.textPrimary),
+          ),
+        ),
+        const Spacer(),
+        Text(
+          name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          stationCount,
+          maxLines: 1,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    ),
+  );
+}
