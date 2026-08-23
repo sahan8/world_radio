@@ -5,6 +5,7 @@ import '../../explore/presentation/explore_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../home/presentation/widgets/mini_player.dart';
 import '../../placeholder/presentation/placeholder_screen.dart';
+import '../../library/presentation/favorites_screen.dart';
 
 class WorldRadioShell extends StatefulWidget {
   const WorldRadioShell({super.key});
@@ -17,12 +18,7 @@ class _WorldRadioShellState extends State<WorldRadioShell> {
   static const _screens = [
     HomeScreen(),
     ExploreScreen(),
-    PlaceholderScreen(
-      title: 'FAVORITES',
-      eyebrow: 'YOUR SIGNALS',
-      description: 'The stations you save will appear here.',
-      icon: Icons.favorite_border,
-    ),
+    FavoritesScreen(),
     PlaceholderScreen(
       title: 'SETTINGS',
       eyebrow: 'TUNE THE EXPERIENCE',

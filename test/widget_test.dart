@@ -4,7 +4,7 @@ import 'package:world_radio/app.dart';
 import 'package:world_radio/features/home/presentation/widgets/mini_player.dart';
 import 'package:world_radio/features/home/presentation/home_screen.dart';
 import 'package:world_radio/features/player/application/player_controller.dart';
-import 'package:world_radio/features/search/data/placeholder_stations.dart';
+import 'package:world_radio/features/stations/domain/radio_station.dart';
 
 void main() {
   testWidgets('all navigation destinations open', (tester) async {
@@ -61,7 +61,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const WorldRadioApp());
     PlayerScope.of(tester.element(find.byType(HomeScreen)))
-        .select(placeholderStations.first);
+        .select(_invalidStation);
     await tester.pumpAndSettle();
     expect(find.byType(MiniPlayer), findsOneWidget);
     expect(find.byTooltip('Retry BBC Radio 1'), findsOneWidget);
@@ -76,3 +76,28 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 }
+
+const _invalidStation = RadioStation(
+  stationUuid: 'invalid-test-station',
+  name: 'BBC Radio 1',
+  url: '',
+  urlResolved: '',
+  homepage: '',
+  favicon: '',
+  tags: ['Pop'],
+  country: 'United Kingdom',
+  countryCode: 'GB',
+  state: 'London',
+  language: 'English',
+  languageCodes: ['eng'],
+  codec: 'MP3',
+  bitrate: 128,
+  votes: 0,
+  clickCount: 0,
+  clickTrend: 0,
+  lastCheckOk: true,
+  lastCheckTime: null,
+  geoLat: null,
+  geoLong: null,
+  hls: false,
+);

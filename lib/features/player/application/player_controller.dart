@@ -3,16 +3,17 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/widgets.dart';
 
-import '../../search/data/placeholder_stations.dart';
 import '../../stations/domain/radio_station.dart';
+import '../../library/application/library_controller.dart';
 
 class PlayerController extends ChangeNotifier {
-  PlayerController(this._handler) {
+  PlayerController(this._handler, this._library) {
     _playbackSubscription = _handler.playbackState.listen(_onPlaybackState);
     _mediaSubscription = _handler.mediaItem.listen(_onMediaItem);
   }
 
   final AudioHandler _handler;
+  final LibraryController _library;
   late final StreamSubscription<PlaybackState> _playbackSubscription;
   late final StreamSubscription<MediaItem?> _mediaSubscription;
   final Map<String, RadioStation> _stationsById = {};
@@ -20,7 +21,6 @@ class PlayerController extends ChangeNotifier {
   List<RadioStation> _queue = const [];
   PlaybackState _playbackState = PlaybackState();
   double _volume = .72;
-  final Set<String> _favorites = {};
   String _sleepTimer = 'Off';
 
   RadioStation? get currentStation => _currentStation;
@@ -35,7 +35,6 @@ class PlayerController extends ChangeNotifier {
   bool get canNext => _queueIndex >= 0 && _queueIndex < _queue.length - 1;
   double get volume => _volume;
   String get sleepTimer => _sleepTimer;
-  bool isFavorite(RadioStation station) => _favorites.contains(station.id);
   int get _queueIndex => _currentStation == null
       ? -1
       : _queue.indexWhere((station) => station.id == _currentStation!.id);
@@ -61,16 +60,6 @@ class PlayerController extends ChangeNotifier {
     if (play) await _handler.playMediaItem(_toMediaItem(station));
   }
 
-  void selectByName(String name) {
-    final matches = placeholderStations.where(
-      (station) => station.stationName.toLowerCase() == name.toLowerCase(),
-    );
-    select(
-      matches.isEmpty ? placeholderStations.first : matches.first,
-      queue: placeholderStations,
-    );
-  }
-
   Future<void> togglePlaying() async {
     if (_currentStation == null) return;
     if (isPlaying || isLoading) {
@@ -91,15 +80,6 @@ class PlayerController extends ChangeNotifier {
   Future<void> next() => canNext ? _handler.skipToNext() : Future.value();
   Future<void> previous() =>
       canPrevious ? _handler.skipToPrevious() : Future.value();
-
-  void toggleFavorite([RadioStation? station]) {
-    final target = station ?? _currentStation;
-    if (target == null) return;
-    _favorites.contains(target.id)
-        ? _favorites.remove(target.id)
-        : _favorites.add(target.id);
-    notifyListeners();
-  }
 
   Future<void> setVolume(double value) async {
     _volume = value.clamp(0, 1);
@@ -144,8 +124,16 @@ class PlayerController extends ChangeNotifier {
     final station = _stationsById[item.id];
     if (station != null) {
       _currentStation = station;
+      _library.recordPlayed(station);
       notifyListeners();
     }
+  }
+
+  void restore(RadioStation station) {
+    _currentStation = station;
+    _queue = [station];
+    _stationsById[station.id] = station;
+    notifyListeners();
   }
 
   List<RadioStation> _unique(List<RadioStation> stations) => [

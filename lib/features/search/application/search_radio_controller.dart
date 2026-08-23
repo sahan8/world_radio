@@ -58,6 +58,9 @@ class SearchRadioController extends ChangeNotifier {
     String? genre,
     String? language,
   }) {
+    // Invalidate an in-flight response immediately, including when the query
+    // is cleared before the next debounced request starts.
+    _requestId++;
     _query = query.trim();
     _countryCode = countryCodes[country];
     _genre = genre;
@@ -78,7 +81,7 @@ class SearchRadioController extends ChangeNotifier {
   Future<void> search() async {
     final request = ++_requestId;
     state = SearchLoadState.loading;
-    notifyListeners();
+    if (request == _requestId) notifyListeners();
     try {
       final values = await _fetch(offset: 0);
       if (request != _requestId) return;
@@ -91,7 +94,7 @@ class SearchRadioController extends ChangeNotifier {
       if (request != _requestId) return;
       state = SearchLoadState.error;
     }
-    notifyListeners();
+    if (request == _requestId) notifyListeners();
   }
 
   Future<void> loadMore() async {

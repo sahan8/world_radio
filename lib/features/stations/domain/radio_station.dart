@@ -25,10 +25,7 @@ class RadioStation {
   });
 
   factory RadioStation.fromJson(Map<String, dynamic> json) => RadioStation(
-    stationUuid: _string(
-      json['stationuuid'],
-      fallback: 'unknown-${json.hashCode}',
-    ),
+    stationUuid: _string(json['stationuuid']),
     name: _string(json['name'], fallback: 'Unknown station'),
     url: _validUrl(json['url']),
     urlResolved: _validUrl(json['url_resolved']),
@@ -75,6 +72,25 @@ class RadioStation {
   final double? geoLong;
   final bool hls;
 
+  Map<String, dynamic> toJson() => {
+    'schema': 1,
+    'stationuuid': stationUuid,
+    'name': name,
+    'url': url,
+    'url_resolved': urlResolved,
+    'favicon': favicon,
+    'tags': tags.join(','),
+    'country': country,
+    'countrycode': countryCode,
+    'state': state,
+    'language': language,
+    'languagecodes': languageCodes.join(','),
+    'codec': codec,
+    'bitrate': bitrate,
+    'lastcheckok': lastCheckOk ? 1 : 0,
+    'hls': hls ? 1 : 0,
+  };
+
   String get id => stationUuid;
   String get stationName => name;
   String get city => state;
@@ -113,10 +129,10 @@ class RadioStation {
       value == '1' ||
       value?.toString().toLowerCase() == 'true';
   static List<String> _list(Object? value) =>
-      _string(value)
-          .split(',')
+      (value is List ? value.map(_string) : _string(value).split(','))
           .map((item) => item.trim())
           .where((item) => item.isNotEmpty)
+          .take(8)
           .toList(growable: false);
   static String _validUrl(Object? value) {
     final text = _string(value);

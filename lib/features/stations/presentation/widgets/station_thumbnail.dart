@@ -20,6 +20,10 @@ class StationThumbnail extends StatelessWidget {
         child: Image.network(
           station.favicon,
           fit: BoxFit.cover,
+          semanticLabel: '${station.name} artwork',
+          cacheWidth: size?.round(),
+          cacheHeight: size?.round(),
+          filterQuality: FilterQuality.low,
           loadingBuilder: (context, child, progress) =>
               progress == null ? child : fallback,
           errorBuilder: (_, _, _) => fallback,

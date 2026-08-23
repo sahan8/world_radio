@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../player/application/player_controller.dart';
+import '../../../library/application/library_controller.dart';
 import '../../../player/presentation/player_screen.dart';
 import '../../../player/presentation/widgets/player_artwork.dart';
 
@@ -11,6 +12,7 @@ class MiniPlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = PlayerScope.of(context);
+    final library = LibraryScope.of(context);
     final station = controller.currentStation;
     return AnimatedSwitcher(
       duration: MediaQuery.disableAnimationsOf(context)
@@ -74,15 +76,15 @@ class MiniPlayer extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        tooltip: controller.isFavorite(station)
+                        tooltip: library.isFavorite(station.id)
                             ? 'Remove favorite'
                             : 'Add favorite',
                         onPressed: () {
                           HapticFeedback.lightImpact();
-                          controller.toggleFavorite();
+                          library.toggleFavorite(station);
                         },
                         icon: Icon(
-                          controller.isFavorite(station)
+                          library.isFavorite(station.id)
                               ? Icons.favorite
                               : Icons.favorite_border,
                         ),

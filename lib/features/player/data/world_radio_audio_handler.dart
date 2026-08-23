@@ -25,14 +25,19 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
   late final StreamSubscription<PlayerException> _errorSubscription;
   StreamSubscription<void>? _noisySubscription;
   int _generation = 0;
+  bool _disposed = false;
 
   Future<void> _configureSession() async {
-    final session = await AudioSession.instance;
-    await session.configure(AudioSessionConfiguration.music());
-    _noisySubscription = session.becomingNoisyEventStream.listen(
-      (_) => pause(),
-    );
-    debugPrint('World Radio audio handler initialized');
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(AudioSessionConfiguration.music());
+      if (_disposed) return;
+      _noisySubscription = session.becomingNoisyEventStream.listen(
+        (_) => pause(),
+      );
+    } catch (error) {
+      debugPrint('Audio session configuration failed: $error');
+    }
   }
 
   @override
@@ -43,9 +48,6 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
     _publishLoading();
     try {
       final uri = _validatedUri(rawUrl);
-      debugPrint(
-        'Radio station selected: ${mediaItem.title} (${mediaItem.id}) ${uri.host}',
-      );
       await _player.stop();
       await _player
           .setUrl(uri.toString())
@@ -82,7 +84,6 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
     } else {
       _player.play();
     }
-    debugPrint('Radio play: ${item.title}');
   }
 
   @override
@@ -90,7 +91,6 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
     _generation++;
     await _player.pause();
     _broadcastState(_player.playerState);
-    debugPrint('Radio paused');
   }
 
   @override
@@ -104,7 +104,6 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
         playing: false,
       ),
     );
-    debugPrint('Radio stopped');
   }
 
   @override
@@ -201,6 +200,9 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
   }
 
   Future<void> disposeHandler() async {
+    if (_disposed) return;
+    _disposed = true;
+    _generation++;
     await _noisySubscription?.cancel();
     await _playerStateSubscription.cancel();
     await _errorSubscription.cancel();

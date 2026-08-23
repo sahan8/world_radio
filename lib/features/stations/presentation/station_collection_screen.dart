@@ -29,6 +29,7 @@ class _StationCollectionScreenState extends State<StationCollectionScreen> {
   bool _loadingMore = false;
   bool _hasMore = true;
   bool _error = false;
+  int _requestId = 0;
 
   @override
   void initState() {
@@ -50,6 +51,7 @@ class _StationCollectionScreenState extends State<StationCollectionScreen> {
 
   Future<void> _load({bool more = false}) async {
     if (more && (!_hasMore || _loadingMore || _loading)) return;
+    final request = more ? _requestId : ++_requestId;
     setState(() {
       if (more) {
         _loadingMore = true;
@@ -74,7 +76,7 @@ class _StationCollectionScreenState extends State<StationCollectionScreen> {
           offset: more ? _stations.length : 0,
         ),
       };
-      if (!mounted) return;
+      if (!mounted || request != _requestId) return;
       final byId = {
         for (final station in [
           ...(more ? _stations : <RadioStation>[]),
@@ -91,9 +93,9 @@ class _StationCollectionScreenState extends State<StationCollectionScreen> {
         _loadingMore = false;
       });
     } on RadioBrowserException {
-      if (mounted) {
+      if (mounted && request == _requestId) {
         setState(() {
-          _error = true;
+          _error = !more;
           _loading = false;
           _loadingMore = false;
         });

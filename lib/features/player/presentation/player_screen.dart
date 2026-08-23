@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../application/player_controller.dart';
+import '../../library/application/library_controller.dart';
 import 'widgets/player_artwork.dart';
 import 'widgets/radio_waveform.dart';
 import 'widgets/sleep_timer_sheet.dart';
@@ -29,9 +30,10 @@ class PlayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = PlayerScope.of(context);
+    final library = LibraryScope.of(context);
     final station = controller.currentStation;
     if (station == null) return const SizedBox.shrink();
-    final favorite = controller.isFavorite(station);
+    final favorite = library.isFavorite(station.id);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: AppColors.background,
@@ -212,7 +214,7 @@ class PlayerScreen extends StatelessWidget {
                           label: 'Favorite',
                           onTap: () {
                             HapticFeedback.lightImpact();
-                            controller.toggleFavorite();
+                            library.toggleFavorite(station);
                           },
                         ),
                         _Action(

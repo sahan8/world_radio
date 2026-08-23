@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../player/application/player_controller.dart';
+import '../../../library/application/library_controller.dart';
 import '../../../stations/domain/radio_station.dart';
 import '../../../stations/presentation/widgets/station_thumbnail.dart';
 
@@ -13,7 +14,8 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = PlayerScope.of(context);
-    final favorite = controller.isFavorite(station);
+    final library = LibraryScope.of(context);
+    final favorite = library.isFavorite(station.id);
     final current = controller.currentStation?.id == station.id;
     return Card(
       child: InkWell(
@@ -76,7 +78,7 @@ class SearchResultTile extends StatelessWidget {
                 children: [
                   IconButton(
                     tooltip: favorite ? 'Remove favorite' : 'Add favorite',
-                    onPressed: () => controller.toggleFavorite(station),
+                    onPressed: () => library.toggleFavorite(station),
                     icon: Icon(
                       favorite ? Icons.favorite : Icons.favorite_border,
                     ),

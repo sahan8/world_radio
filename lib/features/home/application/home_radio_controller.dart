@@ -10,19 +10,25 @@ class HomeRadioController extends ChangeNotifier {
   final RadioBrowserService _service;
   StationLoadState state = StationLoadState.loading;
   List<RadioStation> stations = const [];
+  int _requestId = 0;
+  bool _disposed = false;
 
   Future<void> load() async {
+    final request = ++_requestId;
     state = StationLoadState.loading;
     notifyListeners();
     try {
-      stations = _deduplicate(await _service.getPopularStations());
+      final values = _deduplicate(await _service.getPopularStations());
+      if (request != _requestId || _disposed) return;
+      stations = values;
       state = stations.isEmpty
           ? StationLoadState.empty
           : StationLoadState.success;
     } on RadioBrowserException {
+      if (request != _requestId || _disposed) return;
       state = StationLoadState.error;
     }
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
 
   List<RadioStation> _deduplicate(List<RadioStation> values) => [
@@ -30,6 +36,8 @@ class HomeRadioController extends ChangeNotifier {
   ];
   @override
   void dispose() {
+    _disposed = true;
+    _requestId++;
     _service.close();
     super.dispose();
   }

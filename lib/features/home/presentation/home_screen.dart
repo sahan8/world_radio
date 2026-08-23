@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../stations/data/radio_browser_service.dart';
 import '../../stations/presentation/station_collection_screen.dart';
+import '../../library/application/library_controller.dart';
+import '../../search/presentation/widgets/search_result_tile.dart';
 import '../application/home_radio_controller.dart';
 import 'widgets/category_chip.dart';
 import 'widgets/country_card.dart';
 import 'widgets/home_header.dart';
 import '../../search/presentation/widgets/search_entry_bar.dart';
-import 'widgets/recent_station_tile.dart';
 import 'widgets/section_header.dart';
 import 'widgets/station_card.dart';
 
@@ -39,12 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
     'Chill',
     'Electronic',
   ];
-  static const _recentStations = [
-    ('Radio Paradise', 'United States', 'Eclectic', 'RP'),
-    ('FIP', 'France', '105.1 FM', 'FIP'),
-    ('Kiss FM', 'Sri Lanka', '96.9 FM', 'KISS'),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -63,107 +58,156 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => RefreshIndicator(
-    onRefresh: _radio.load,
-    child: CustomScrollView(
-      key: const PageStorageKey('home-scroll'),
-      slivers: [
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 32, 24, 0),
-          sliver: SliverToBoxAdapter(child: HomeHeader()),
-        ),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
-          sliver: SliverToBoxAdapter(child: SearchEntryBar()),
-        ),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
-          sliver: SliverToBoxAdapter(
-            child: SectionHeader(title: 'LIVE NOW', showAction: true),
+  Widget build(BuildContext context) {
+    final library = LibraryScope.of(context);
+    return RefreshIndicator(
+      onRefresh: _radio.load,
+      child: CustomScrollView(
+        key: const PageStorageKey('home-scroll'),
+        slivers: [
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(24, 32, 24, 0),
+            sliver: SliverToBoxAdapter(child: HomeHeader()),
           ),
-        ),
-        SliverToBoxAdapter(child: _LiveStations(controller: _radio)),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
-          sliver: SliverToBoxAdapter(
-            child: SectionHeader(title: 'EXPLORE THE WORLD'),
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
+            sliver: SliverToBoxAdapter(child: SearchEntryBar()),
           ),
-        ),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: 140,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              scrollDirection: Axis.horizontal,
-              itemCount: _countries.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final country = _countries[index];
-                return CountryCard(
-                  name: country.$1,
-                  countryCode: country.$2,
-                  stationCount: country.$3,
-                  onTap: () => _openCollection(
-                    context,
-                    country.$1,
-                    country.$2,
-                    StationCollectionType.country,
-                  ),
-                );
-              },
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
+            sliver: SliverToBoxAdapter(
+              child: SectionHeader(title: 'LIVE NOW', showAction: true),
             ),
           ),
-        ),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
-          sliver: SliverToBoxAdapter(child: SectionHeader(title: 'BROWSE')),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          sliver: SliverToBoxAdapter(
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final category in _categories)
-                  CategoryChip(
-                    label: category,
+          SliverToBoxAdapter(child: _LiveStations(controller: _radio)),
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
+            sliver: SliverToBoxAdapter(
+              child: SectionHeader(title: 'EXPLORE THE WORLD'),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 140,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                scrollDirection: Axis.horizontal,
+                itemCount: _countries.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final country = _countries[index];
+                  return CountryCard(
+                    name: country.$1,
+                    countryCode: country.$2,
+                    stationCount: country.$3,
                     onTap: () => _openCollection(
                       context,
-                      category,
-                      category.toLowerCase(),
-                      StationCollectionType.genre,
+                      country.$1,
+                      country.$2,
+                      StationCollectionType.country,
                     ),
-                  ),
-              ],
+                  );
+                },
+              ),
             ),
           ),
-        ),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
-          sliver: SliverToBoxAdapter(
-            child: SectionHeader(title: 'RECENTLY PLAYED'),
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
+            sliver: SliverToBoxAdapter(child: SectionHeader(title: 'BROWSE')),
           ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-          sliver: SliverList.separated(
-            itemCount: _recentStations.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final station = _recentStations[index];
-              return RecentStationTile(
-                name: station.$1,
-                country: station.$2,
-                metadata: station.$3,
-                artworkLabel: station.$4,
-              );
-            },
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            sliver: SliverToBoxAdapter(
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (final category in _categories)
+                    CategoryChip(
+                      label: category,
+                      onTap: () => _openCollection(
+                        context,
+                        category,
+                        category.toLowerCase(),
+                        StationCollectionType.genre,
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
+            sliver: SliverToBoxAdapter(
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: SectionHeader(title: 'RECENTLY PLAYED'),
+                  ),
+                  if (library.recentStations.isNotEmpty)
+                    IconButton(
+                      tooltip: 'Clear listening history',
+                      onPressed: () => _confirmClearHistory(context, library),
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          if (library.recentStations.isEmpty)
+            const SliverPadding(
+              padding: EdgeInsets.fromLTRB(24, 0, 24, 32),
+              sliver: SliverToBoxAdapter(
+                child: Text('Stations you play will appear here.'),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+              sliver: SliverList.separated(
+                itemCount: library.recentStations.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final station = library.recentStations[index];
+                  return SearchResultTile(
+                    station: station,
+                    queue: library.recentStations,
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmClearHistory(
+    BuildContext context,
+    LibraryController library,
+  ) async {
+    final clear = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear listening history?'),
+        content: const Text(
+          'This removes all recently played stations from this device.',
         ),
-      ],
-    ),
-  );
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('CANCEL'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('CLEAR'),
+          ),
+        ],
+      ),
+    );
+    if (clear == true) {
+      await library.clearHistory();
+    }
+  }
 
   void _openCollection(
     BuildContext context,

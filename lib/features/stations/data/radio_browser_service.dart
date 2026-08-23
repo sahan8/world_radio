@@ -63,14 +63,20 @@ class RadioBrowserService {
       }
       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
       if (decoded is! List) throw const RadioBrowserException();
-      return decoded
+      final stations = decoded
           .whereType<Map<String, dynamic>>()
           .map(RadioStation.fromJson)
           .where(
             (station) =>
-                station.stationUuid.isNotEmpty && station.name.isNotEmpty,
+                station.stationUuid.isNotEmpty &&
+                station.name.isNotEmpty &&
+                station.streamUrl.isNotEmpty,
           )
           .toList(growable: false);
+      return [
+        ...{for (final station in stations) station.stationUuid: station}
+            .values,
+      ];
     } on TimeoutException {
       throw const RadioBrowserException();
     } on FormatException {
