@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:world_radio/app.dart';
+import 'package:world_radio/features/home/presentation/widgets/mini_player.dart';
 
 void main() {
   testWidgets('all navigation destinations open', (tester) async {
@@ -50,6 +51,31 @@ void main() {
     await tester.tap(find.text('Languages'));
     await tester.pumpAndSettle();
     expect(find.text('Japanese'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('station selection activates mini player and opens player', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const WorldRadioApp());
+
+    await tester.tap(find.text('BBC Radio 1').first);
+    await tester.pumpAndSettle();
+    expect(find.byType(MiniPlayer), findsOneWidget);
+    expect(find.byTooltip('Pause BBC Radio 1'), findsOneWidget);
+
+    final miniRect = tester.getRect(find.byKey(const Key('mini-player-open')));
+    await tester.tapAt(Offset(miniRect.left + 100, miniRect.center.dy));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(find.text('NOW PLAYING'), findsOneWidget);
+    expect(find.bySemanticsLabel('Pause station'), findsOneWidget);
+
+    await tester.ensureVisible(find.bySemanticsLabel('Pause station'));
+    await tester.pump();
+    await tester.tap(find.bySemanticsLabel('Pause station'));
+    await tester.pump();
+    expect(find.bySemanticsLabel('Play station'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_text_styles.dart';
 import '../../home/presentation/widgets/station_card.dart';
+import '../../search/presentation/widgets/search_entry_bar.dart';
 import '../data/explore_data.dart';
 import 'widgets/country_card.dart';
 import 'widgets/discovery_selector.dart';
@@ -33,12 +34,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
         const SliverPadding(
           padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
           sliver: SliverToBoxAdapter(
-            child: TextField(
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: 'Search countries, genres, languages...',
-                prefixIcon: Icon(Icons.travel_explore, semanticLabel: 'Search'),
-              ),
+            child: SearchEntryBar(
+              hint: 'Search countries, genres, languages...',
             ),
           ),
         ),

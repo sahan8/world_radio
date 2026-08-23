@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'widgets/category_chip.dart';
 import 'widgets/country_card.dart';
 import 'widgets/home_header.dart';
-import 'widgets/radio_search_bar.dart';
+import '../../search/presentation/widgets/search_entry_bar.dart';
 import 'widgets/recent_station_tile.dart';
 import 'widgets/section_header.dart';
 import 'widgets/station_card.dart';
@@ -50,7 +50,7 @@ class HomeScreen extends StatelessWidget {
       ),
       const SliverPadding(
         padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
-        sliver: SliverToBoxAdapter(child: RadioSearchBar()),
+        sliver: SliverToBoxAdapter(child: SearchEntryBar()),
       ),
       const SliverPadding(
         padding: EdgeInsets.fromLTRB(24, 36, 24, 16),
