@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../data/placeholder_stations.dart';
-import '../domain/station_preview.dart';
+import '../../stations/data/radio_browser_service.dart';
+import '../../stations/domain/radio_station.dart';
+import '../application/search_radio_controller.dart';
 import 'widgets/search_empty_state.dart';
 import 'widgets/search_result_tile.dart';
 import 'widgets/station_filter_sheet.dart';
@@ -23,6 +24,10 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final _controller = SearchController();
   final _focusNode = FocusNode();
+  final _scrollController = ScrollController();
+  late final SearchRadioController _radio = SearchRadioController(
+    RadioBrowserService(),
+  )..addListener(_radioChanged);
   StationFilters _filters = const StationFilters();
   final _recent = ['Japan', 'Jazz', 'BBC Radio', 'Sri Lanka'];
   static const _trending = ['Tokyo', 'Electronic', 'News', 'Chill Radio'];
@@ -31,6 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _controller.addListener(_refresh);
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _focusNode.requestFocus(),
     );
@@ -39,40 +45,45 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void dispose() {
     _controller.removeListener(_refresh);
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _radio.removeListener(_radioChanged);
+    _radio.dispose();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _refresh() => setState(() {});
+  void _refresh() {
+    setState(() {});
+    _radio.update(
+      _controller.text,
+      country: _filters.country,
+      genre: _filters.genre,
+      language: _filters.language,
+    );
+  }
 
-  List<StationPreview> get _results => placeholderStations
-      .where((station) {
-        if (!station.matches(_controller.text)) return false;
-        if (_filters.country != null && station.country != _filters.country) {
-          return false;
-        }
-        if (_filters.language != null &&
-            station.language != _filters.language) {
-          return false;
-        }
-        if (_filters.genre != null &&
-            !station.genre.toLowerCase().contains(
-              _filters.genre!.toLowerCase(),
-            )) {
-          return false;
-        }
-        if (_filters.liveOnly && !station.isLive) {
-          return false;
-        }
-        return true;
-      })
-      .toList(growable: false);
+  void _radioChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.extentAfter < 500) _radio.loadMore();
+  }
 
   Future<void> _openFilters() async {
     FocusScope.of(context).unfocus();
     final result = await showStationFilterSheet(context, _filters);
-    if (result != null && mounted) setState(() => _filters = result);
+    if (result != null && mounted) {
+      setState(() => _filters = result);
+      _radio.update(
+        _controller.text,
+        country: result.country,
+        genre: result.genre,
+        language: result.language,
+      );
+    }
   }
 
   void _selectSuggestion(String value) {
@@ -99,6 +110,7 @@ class _SearchScreenState extends State<SearchScreen> {
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: CustomScrollView(
+          controller: _scrollController,
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           slivers: [
             const SliverPadding(
@@ -138,7 +150,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     if (!showDiscovery)
                       Expanded(
                         child: Text(
-                          '${_results.length} STATIONS FOUND',
+                          '${_radio.stations.length} STATIONS FOUND',
                           style: AppTextStyles.caption,
                         ),
                       )
@@ -163,7 +175,15 @@ class _SearchScreenState extends State<SearchScreen> {
                 sliver: SliverToBoxAdapter(
                   child: _ActiveFilters(
                     filters: _filters,
-                    onChanged: (value) => setState(() => _filters = value),
+                    onChanged: (value) {
+                      setState(() => _filters = value);
+                      _radio.update(
+                        _controller.text,
+                        country: value.country,
+                        genre: value.genre,
+                        language: value.language,
+                      );
+                    },
                   ),
                 ),
               ),
@@ -191,12 +211,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           trending: _trending,
                           onSelected: _selectSuggestion,
                         )
-                      : _results.isEmpty
-                      ? const SearchEmptyState(key: ValueKey('empty'))
-                      : _ResultList(
-                          key: const ValueKey('results'),
-                          stations: _results,
-                        ),
+                      : _SearchContent(controller: _radio),
                 ),
               ),
             ),
@@ -280,16 +295,61 @@ class _SuggestionSection extends StatelessWidget {
   );
 }
 
+class _SearchContent extends StatelessWidget {
+  const _SearchContent({required this.controller});
+  final SearchRadioController controller;
+  @override
+  Widget build(BuildContext context) => switch (controller.state) {
+    SearchLoadState.idle || SearchLoadState.loading => const Padding(
+      padding: EdgeInsets.symmetric(vertical: 56),
+      child: Center(child: CircularProgressIndicator()),
+    ),
+    SearchLoadState.error => _NetworkError(onRetry: controller.search),
+    SearchLoadState.empty => const SearchEmptyState(key: ValueKey('empty')),
+    SearchLoadState.success || SearchLoadState.loadingMore => Column(
+      children: [
+        _ResultList(stations: controller.stations),
+        if (controller.state == SearchLoadState.loadingMore)
+          const Padding(
+            padding: EdgeInsets.all(20),
+            child: CircularProgressIndicator(),
+          ),
+      ],
+    ),
+  };
+}
+
+class _NetworkError extends StatelessWidget {
+  const _NetworkError({required this.onRetry});
+  final VoidCallback onRetry;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 48),
+    child: Column(
+      children: [
+        const Icon(Icons.signal_wifi_connected_no_internet_4, size: 48),
+        const SizedBox(height: 12),
+        Text('NO SIGNAL', style: Theme.of(context).textTheme.headlineMedium),
+        const SizedBox(height: 6),
+        const Text("We couldn't reach the radio network."),
+        const SizedBox(height: 16),
+        OutlinedButton(onPressed: onRetry, child: const Text('TRY AGAIN')),
+      ],
+    ),
+  );
+}
+
 class _ResultList extends StatelessWidget {
-  const _ResultList({required this.stations, super.key});
-  final List<StationPreview> stations;
+  const _ResultList({required this.stations});
+  final List<RadioStation> stations;
   @override
   Widget build(BuildContext context) => ListView.separated(
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
     itemCount: stations.length,
     separatorBuilder: (_, _) => const SizedBox(height: 10),
-    itemBuilder: (_, index) => SearchResultTile(station: stations[index]),
+    itemBuilder: (_, index) =>
+        SearchResultTile(station: stations[index], queue: stations),
   );
 }
 

@@ -5,9 +5,10 @@ import '../../../../core/theme/app_radii.dart';
 import '../../data/explore_data.dart';
 
 class ExploreCountryCard extends StatelessWidget {
-  const ExploreCountryCard({required this.country, super.key});
+  const ExploreCountryCard({required this.country, this.onTap, super.key});
 
   final CountryDestination country;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -18,7 +19,7 @@ class ExploreCountryCard extends StatelessWidget {
     ),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: SizedBox(
         height: 152,
         child: Padding(

@@ -5,9 +5,10 @@ import '../../../../core/theme/app_radii.dart';
 import '../../data/explore_data.dart';
 
 class LanguageTile extends StatelessWidget {
-  const LanguageTile({required this.language, super.key});
+  const LanguageTile({required this.language, this.onTap, super.key});
 
   final LanguageDestination language;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -18,7 +19,7 @@ class LanguageTile extends StatelessWidget {
     ),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 72),
         child: Padding(

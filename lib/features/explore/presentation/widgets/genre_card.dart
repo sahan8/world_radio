@@ -5,9 +5,10 @@ import '../../../../core/theme/app_radii.dart';
 import '../../data/explore_data.dart';
 
 class GenreCard extends StatelessWidget {
-  const GenreCard({required this.genre, super.key});
+  const GenreCard({required this.genre, this.onTap, super.key});
 
   final GenreDestination genre;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -18,7 +19,7 @@ class GenreCard extends StatelessWidget {
     ),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 112),
         child: Padding(

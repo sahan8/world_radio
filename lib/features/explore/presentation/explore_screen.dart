@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_text_styles.dart';
-import '../../home/presentation/widgets/station_card.dart';
 import '../../search/presentation/widgets/search_entry_bar.dart';
+import '../../stations/presentation/station_collection_screen.dart';
 import '../data/explore_data.dart';
 import 'widgets/country_card.dart';
 import 'widgets/discovery_selector.dart';
@@ -93,34 +93,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
             ),
           ),
         ),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 40, 24, 16),
-          sliver: SliverToBoxAdapter(
-            child: Text(
-              'POPULAR AROUND THE WORLD',
-              style: AppTextStyles.headingMedium,
-            ),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: 276,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              scrollDirection: Axis.horizontal,
-              itemCount: ExploreData.popularStations.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final station = ExploreData.popularStations[index];
-                return StationCard(
-                  name: station.name,
-                  country: station.country,
-                  artworkLabel: station.artworkLabel,
-                );
-              },
-            ),
-          ),
-        ),
         const SliverToBoxAdapter(child: SizedBox(height: 32)),
       ],
     );
@@ -155,14 +127,39 @@ class _DiscoveryContent extends StatelessWidget {
       final children = switch (category) {
         DiscoveryCategory.countries => [
           for (final country in ExploreData.countries)
-            ExploreCountryCard(country: country),
+            ExploreCountryCard(
+              country: country,
+              onTap: () => _open(
+                context,
+                country.name,
+                country.code,
+                StationCollectionType.country,
+              ),
+            ),
         ],
         DiscoveryCategory.genres => [
-          for (final genre in ExploreData.genres) GenreCard(genre: genre),
+          for (final genre in ExploreData.genres)
+            GenreCard(
+              genre: genre,
+              onTap: () => _open(
+                context,
+                genre.name,
+                genre.name.toLowerCase(),
+                StationCollectionType.genre,
+              ),
+            ),
         ],
         DiscoveryCategory.languages => [
           for (final language in ExploreData.languages)
-            LanguageTile(language: language),
+            LanguageTile(
+              language: language,
+              onTap: () => _open(
+                context,
+                language.name,
+                language.name.toLowerCase(),
+                StationCollectionType.language,
+              ),
+            ),
         ],
       };
 
@@ -176,4 +173,18 @@ class _DiscoveryContent extends StatelessWidget {
       );
     },
   );
+
+  static void _open(
+    BuildContext context,
+    String title,
+    String value,
+    StationCollectionType type,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            StationCollectionScreen(title: title, value: value, type: type),
+      ),
+    );
+  }
 }

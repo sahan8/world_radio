@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../player/application/player_controller.dart';
-import '../../domain/station_preview.dart';
+import '../../../stations/domain/radio_station.dart';
+import '../../../stations/presentation/widgets/station_thumbnail.dart';
 
 class SearchResultTile extends StatelessWidget {
-  const SearchResultTile({required this.station, super.key});
-  final StationPreview station;
+  const SearchResultTile({required this.station, this.queue, super.key});
+  final RadioStation station;
+  final List<RadioStation>? queue;
 
   @override
   Widget build(BuildContext context) {
     final controller = PlayerScope.of(context);
     final favorite = controller.isFavorite(station);
+    final current = controller.currentStation?.id == station.id;
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
           FocusScope.of(context).unfocus();
-          controller.select(station);
+          controller.select(station, queue: queue);
           Navigator.maybePop(context);
         },
         child: Padding(
@@ -26,16 +28,10 @@ class SearchResultTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
+              SizedBox(
                 width: 64,
                 height: 64,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceElevated,
-                  border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(station.countryCode, style: AppTextStyles.title),
+                child: StationThumbnail(station: station),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -61,12 +57,15 @@ class SearchResultTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      '${station.country} · ${station.city}',
+                      [
+                        station.displayCountry,
+                        if (station.city.isNotEmpty) station.city,
+                      ].join(' · '),
                       style: AppTextStyles.body,
                       maxLines: 2,
                     ),
                     Text(
-                      '${station.genre} · ${station.language}${station.frequency == null ? '' : ' · ${station.frequency}'}',
+                      '${station.primaryGenre} · ${station.primaryLanguage} · ${station.technicalSummary}',
                       style: AppTextStyles.caption,
                       maxLines: 2,
                     ),
@@ -85,10 +84,24 @@ class SearchResultTile extends StatelessWidget {
                   IconButton.filled(
                     tooltip: 'Play ${station.stationName}',
                     onPressed: () {
-                      controller.select(station);
+                      current
+                          ? controller.togglePlaying()
+                          : controller.select(station, queue: queue);
                       Navigator.maybePop(context);
                     },
-                    icon: const Icon(Icons.play_arrow),
+                    icon: current && controller.isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(
+                            current && controller.isPlaying
+                                ? Icons.pause
+                                : current && controller.hasError
+                                ? Icons.refresh
+                                : Icons.play_arrow,
+                          ),
                   ),
                 ],
               ),

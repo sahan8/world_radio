@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../search/domain/station_preview.dart';
+import '../../../stations/domain/radio_station.dart';
 
 class PlayerArtwork extends StatelessWidget {
   const PlayerArtwork({
@@ -10,7 +10,7 @@ class PlayerArtwork extends StatelessWidget {
     this.size,
     super.key,
   });
-  final StationPreview station;
+  final RadioStation station;
   final bool hero;
   final double? size;
 
@@ -33,7 +33,7 @@ class PlayerArtwork extends StatelessWidget {
               top: 18,
               left: 18,
               child: Text(
-                station.frequency ?? 'ONLINE',
+                station.technicalSummary,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),

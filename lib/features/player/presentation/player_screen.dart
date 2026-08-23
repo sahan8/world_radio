@@ -109,32 +109,69 @@ class PlayerScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${station.city}, ${station.country}',
+                      [
+                        if (station.city.isNotEmpty) station.city,
+                        station.displayCountry,
+                      ].join(', '),
                       style: AppTextStyles.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      '${station.frequency ?? 'ONLINE'} · ${station.genre} · ${station.language}',
+                      '${station.technicalSummary} · ${station.primaryGenre} · ${station.primaryLanguage}',
                       style: AppTextStyles.caption,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
                     RadioWaveform(playing: controller.isPlaying),
+                    if (controller.hasError) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        'SIGNAL LOST',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "This station isn't responding right now.",
+                        style: AppTextStyles.body,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          OutlinedButton(
+                            onPressed: controller.retry,
+                            child: const Text('TRY AGAIN'),
+                          ),
+                          if (controller.canNext) ...[
+                            const SizedBox(width: 10),
+                            TextButton(
+                              onPressed: controller.next,
+                              child: const Text('NEXT STATION'),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 22),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         IconButton(
                           tooltip: 'Previous station',
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            controller.previous();
-                          },
+                          onPressed: controller.canPrevious
+                              ? () {
+                                  HapticFeedback.selectionClick();
+                                  controller.previous();
+                                }
+                              : null,
                           icon: const Icon(Icons.skip_previous),
                           iconSize: 34,
                         ),
                         _PlayButton(
                           playing: controller.isPlaying,
+                          loading: controller.isLoading,
+                          error: controller.hasError,
                           onPressed: () {
                             HapticFeedback.selectionClick();
                             controller.togglePlaying();
@@ -142,10 +179,12 @@ class PlayerScreen extends StatelessWidget {
                         ),
                         IconButton(
                           tooltip: 'Next station',
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            controller.next();
-                          },
+                          onPressed: controller.canNext
+                              ? () {
+                                  HapticFeedback.selectionClick();
+                                  controller.next();
+                                }
+                              : null,
                           icon: const Icon(Icons.skip_next),
                           iconSize: 34,
                         ),
@@ -153,7 +192,13 @@ class PlayerScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      controller.isPlaying ? 'PAUSE' : 'PLAY',
+                      controller.isLoading
+                          ? 'BUFFERING'
+                          : controller.hasError
+                          ? 'RETRY'
+                          : controller.isPlaying
+                          ? 'PAUSE'
+                          : 'PLAY',
                       style: AppTextStyles.caption,
                     ),
                     const SizedBox(height: 22),
@@ -211,8 +256,15 @@ class PlayerScreen extends StatelessWidget {
 }
 
 class _PlayButton extends StatefulWidget {
-  const _PlayButton({required this.playing, required this.onPressed});
+  const _PlayButton({
+    required this.playing,
+    required this.loading,
+    required this.error,
+    required this.onPressed,
+  });
   final bool playing;
+  final bool loading;
+  final bool error;
   final VoidCallback onPressed;
   @override
   State<_PlayButton> createState() => _PlayButtonState();
@@ -233,7 +285,13 @@ class _PlayButtonState extends State<_PlayButton> {
       duration: const Duration(milliseconds: 90),
       child: Semantics(
         button: true,
-        label: widget.playing ? 'Pause station' : 'Play station',
+        label: widget.loading
+            ? 'Station buffering'
+            : widget.error
+            ? 'Retry station'
+            : widget.playing
+            ? 'Pause station'
+            : 'Play station',
         child: Container(
           width: 82,
           height: 82,
@@ -241,11 +299,23 @@ class _PlayButtonState extends State<_PlayButton> {
             color: AppColors.controlPrimary,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            widget.playing ? Icons.pause : Icons.play_arrow,
-            color: AppColors.controlOnPrimary,
-            size: 42,
-          ),
+          child: widget.loading
+              ? const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(
+                    color: AppColors.controlOnPrimary,
+                    strokeWidth: 3,
+                  ),
+                )
+              : Icon(
+                  widget.error
+                      ? Icons.refresh
+                      : widget.playing
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                  color: AppColors.controlOnPrimary,
+                  size: 42,
+                ),
         ),
       ),
     ),

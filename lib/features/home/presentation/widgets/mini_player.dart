@@ -64,7 +64,7 @@ class MiniPlayer extends StatelessWidget {
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                               Text(
-                                '${station.country} · ${station.frequency ?? 'Online'}',
+                                '${station.displayCountry} · ${station.technicalSummary}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.bodySmall,
@@ -88,16 +88,32 @@ class MiniPlayer extends StatelessWidget {
                         ),
                       ),
                       IconButton.filled(
-                        tooltip: controller.isPlaying
+                        tooltip: controller.isLoading
+                            ? 'Buffering ${station.stationName}'
+                            : controller.hasError
+                            ? 'Retry ${station.stationName}'
+                            : controller.isPlaying
                             ? 'Pause ${station.stationName}'
                             : 'Play ${station.stationName}',
                         onPressed: () {
                           HapticFeedback.selectionClick();
                           controller.togglePlaying();
                         },
-                        icon: Icon(
-                          controller.isPlaying ? Icons.pause : Icons.play_arrow,
-                        ),
+                        icon: controller.isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(
+                                controller.hasError
+                                    ? Icons.refresh
+                                    : controller.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                              ),
                         constraints: const BoxConstraints.tightFor(
                           width: 48,
                           height: 48,
