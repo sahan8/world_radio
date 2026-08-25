@@ -20,15 +20,18 @@ class LibraryController extends ChangeNotifier {
       _favorites.any((station) => station.id == stationUuid);
 
   Future<void> load() async {
-    final values = await Future.wait([
-      _storage.loadFavorites(),
-      _storage.loadRecentStations(),
-    ]);
-    _favorites = _unique(values[0]);
-    _recent = _unique(values[1]).take(recentLimit).toList(growable: false);
-    _lastStation = await _storage.loadLastStation();
-    _loaded = true;
-    notifyListeners();
+    try {
+      final values = await Future.wait([
+        _storage.loadFavorites(),
+        _storage.loadRecentStations(),
+      ]);
+      _favorites = _unique(values[0]);
+      _recent = _unique(values[1]).take(recentLimit).toList(growable: false);
+      _lastStation = await _storage.loadLastStation();
+    } finally {
+      _loaded = true;
+      notifyListeners();
+    }
   }
 
   Future<void> toggleFavorite(RadioStation station) async {

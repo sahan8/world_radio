@@ -65,7 +65,11 @@ class SharedPreferencesLocalStorageService implements LocalStorageService {
           : RadioStation.fromJson(jsonDecode(value) as Map<String, dynamic>);
     } catch (error) {
       debugPrint('Last station could not be restored: $error');
-      await _preferences.remove(StorageKeys.lastStation);
+      try {
+        await _preferences.remove(StorageKeys.lastStation);
+      } catch (_) {
+        // Storage may be unavailable; returning null remains the safe fallback.
+      }
       return null;
     }
   }

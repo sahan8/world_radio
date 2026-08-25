@@ -4,13 +4,12 @@ import '../../application/player_controller.dart';
 
 Future<void> showSleepTimerSheet(BuildContext context) async {
   final controller = PlayerScope.of(context);
-  const options = [
-    '15 minutes',
-    '30 minutes',
-    '45 minutes',
-    '1 hour',
-    'End of current session',
-    'Off',
+  const options = <(String, Duration?)>[
+    ('15 minutes', Duration(minutes: 15)),
+    ('30 minutes', Duration(minutes: 30)),
+    ('45 minutes', Duration(minutes: 45)),
+    ('1 hour', Duration(hours: 1)),
+    ('Off', null),
   ];
   await showModalBottomSheet<void>(
     context: context,
@@ -30,12 +29,12 @@ Future<void> showSleepTimerSheet(BuildContext context) async {
             for (final option in options)
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(option),
-                trailing: controller.sleepTimer == option
+                title: Text(option.$1),
+                trailing: controller.sleepTimer == option.$1
                     ? const Icon(Icons.check)
                     : null,
                 onTap: () {
-                  controller.setSleepTimer(option);
+                  controller.setSleepTimer(option.$1, option.$2);
                   Navigator.pop(context);
                 },
               ),

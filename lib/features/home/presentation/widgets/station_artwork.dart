@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 
 class StationArtwork extends StatelessWidget {
@@ -14,9 +13,9 @@ class StationArtwork extends StatelessWidget {
     height: size,
     alignment: Alignment.center,
     decoration: BoxDecoration(
-      color: AppColors.surfaceElevated,
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       borderRadius: BorderRadius.circular(AppRadii.small),
-      border: Border.all(color: AppColors.borderSubtle),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: FittedBox(
       fit: BoxFit.scaleDown,

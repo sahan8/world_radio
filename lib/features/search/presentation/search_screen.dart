@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../stations/data/radio_browser_service.dart';
 import '../../stations/domain/radio_station.dart';
@@ -8,9 +7,12 @@ import '../application/search_radio_controller.dart';
 import 'widgets/search_empty_state.dart';
 import 'widgets/search_result_tile.dart';
 import 'widgets/station_filter_sheet.dart';
+import '../../../core/motion/app_motion.dart';
+import '../../../widgets/visuals/radio_visuals.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  const SearchScreen({this.embedded = false, super.key});
+  final bool embedded;
 
   static Route<void> route() => MaterialPageRoute(
     builder: (_) => const SearchScreen(),
@@ -37,9 +39,11 @@ class _SearchScreenState extends State<SearchScreen> {
     super.initState();
     _controller.addListener(_refresh);
     _scrollController.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _focusNode.requestFocus(),
-    );
+    if (!widget.embedded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focusNode.requestFocus();
+      });
+    }
   }
 
   @override
@@ -98,13 +102,16 @@ class _SearchScreenState extends State<SearchScreen> {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          tooltip: 'Back',
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back),
-        ),
+        automaticallyImplyLeading: false,
+        leading: widget.embedded
+            ? null
+            : IconButton(
+                tooltip: 'Back',
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+              ),
         title: const Text('SEARCH RADIO'),
       ),
       body: GestureDetector(
@@ -191,9 +198,7 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
               sliver: SliverToBoxAdapter(
                 child: AnimatedSwitcher(
-                  duration: reduceMotion
-                      ? Duration.zero
-                      : const Duration(milliseconds: 180),
+                  duration: reduceMotion ? Duration.zero : AppMotion.standard,
                   transitionBuilder: (child, animation) => FadeTransition(
                     opacity: animation,
                     child: SlideTransition(
@@ -236,8 +241,8 @@ class _Suggestions extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     children: [
       _SuggestionSection(
-        title: 'RECENT SEARCHES',
-        icon: Icons.history,
+        title: 'QUICK SEARCHES',
+        icon: Icons.bolt_outlined,
         values: recent,
         onSelected: onSelected,
       ),
@@ -302,7 +307,7 @@ class _SearchContent extends StatelessWidget {
   Widget build(BuildContext context) => switch (controller.state) {
     SearchLoadState.idle || SearchLoadState.loading => const Padding(
       padding: EdgeInsets.symmetric(vertical: 56),
-      child: Center(child: CircularProgressIndicator()),
+      child: Center(child: SignalLoader()),
     ),
     SearchLoadState.error => _NetworkError(onRetry: controller.search),
     SearchLoadState.empty => const SearchEmptyState(key: ValueKey('empty')),
@@ -310,10 +315,7 @@ class _SearchContent extends StatelessWidget {
       children: [
         _ResultList(stations: controller.stations),
         if (controller.state == SearchLoadState.loadingMore)
-          const Padding(
-            padding: EdgeInsets.all(20),
-            child: CircularProgressIndicator(),
-          ),
+          const Padding(padding: EdgeInsets.all(20), child: SignalLoader()),
       ],
     ),
   };
@@ -364,27 +366,35 @@ class _ActiveFilters extends StatelessWidget {
     children: [
       if (filters.country != null)
         _chip(
+          context,
           filters.country!,
           () => onChanged(filters.copyWith(clearCountry: true)),
         ),
       if (filters.genre != null)
         _chip(
+          context,
           filters.genre!,
           () => onChanged(filters.copyWith(clearGenre: true)),
         ),
       if (filters.language != null)
         _chip(
+          context,
           filters.language!,
           () => onChanged(filters.copyWith(clearLanguage: true)),
         ),
       if (filters.liveOnly)
-        _chip('LIVE ONLY', () => onChanged(filters.copyWith(liveOnly: false))),
+        _chip(
+          context,
+          'LIVE ONLY',
+          () => onChanged(filters.copyWith(liveOnly: false)),
+        ),
     ],
   );
-  Widget _chip(String label, VoidCallback remove) => InputChip(
-    label: Text(label.toUpperCase()),
-    onDeleted: remove,
-    backgroundColor: AppColors.surfaceElevated,
-    side: const BorderSide(color: AppColors.border),
-  );
+  Widget _chip(BuildContext context, String label, VoidCallback remove) =>
+      InputChip(
+        label: Text(label.toUpperCase()),
+        onDeleted: remove,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        side: BorderSide(color: Theme.of(context).colorScheme.outline),
+      );
 }

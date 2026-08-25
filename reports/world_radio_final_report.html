@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>World Radio - Final Project Report</title>
+  <style>
+    @page { size: A4; margin: 17mm 16mm 18mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #20242a; font: 10.5pt/1.5 Arial, sans-serif; }
+    h1, h2, h3 { color: #111318; margin: 0 0 10px; }
+    h1 { font-size: 31pt; letter-spacing: -1px; }
+    h2 { font-size: 19pt; border-bottom: 2px solid #ff4d5a; padding-bottom: 6px; margin-top: 5px; }
+    h3 { font-size: 12.5pt; margin-top: 18px; }
+    p { margin: 7px 0; }
+    ul, ol { margin: 7px 0 12px 20px; padding: 0; }
+    li { margin: 3px 0; }
+    code { background: #eef0f3; padding: 1px 4px; border-radius: 3px; font-size: 9pt; }
+    pre { background: #17191d; color: #f5f6f7; padding: 12px; border-radius: 8px; overflow-wrap: anywhere; white-space: pre-wrap; font-size: 8.5pt; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 9.5pt; }
+    th { background: #20242a; color: white; text-align: left; }
+    th, td { padding: 8px; border: 1px solid #d5d8dc; vertical-align: top; }
+    tr:nth-child(even) td { background: #f4f5f6; }
+    .cover { height: 255mm; display: flex; flex-direction: column; justify-content: center; }
+    .eyebrow { color: #ff3e4d; font-weight: 700; letter-spacing: 2px; font-size: 9pt; }
+    .subtitle { font-size: 16pt; color: #555c65; max-width: 145mm; }
+    .rule { width: 45mm; height: 6px; background: #ff4d5a; margin: 24px 0; }
+    .meta { margin-top: 28px; color: #606872; }
+    .page { page-break-before: always; }
+    .callout { border-left: 5px solid #ff4d5a; background: #f5f6f7; padding: 11px 14px; margin: 14px 0; }
+    .good { border-left-color: #1c9b63; }
+    .warn { border-left-color: #e69b20; }
+    .status { display: inline-block; border-radius: 12px; padding: 2px 8px; font-size: 8pt; font-weight: bold; }
+    .pass { background: #dff5e9; color: #146b45; }
+    .gate { background: #fff0d2; color: #805600; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card { border: 1px solid #d9dce0; border-radius: 9px; padding: 12px; }
+    .small { font-size: 8.5pt; color: #616973; }
+    a { color: #b22331; text-decoration: none; }
+    footer { position: fixed; bottom: -10mm; left: 0; right: 0; text-align: center; color: #8a9098; font-size: 8pt; }
+  </style>
+</head>
+<body>
+  <footer>World Radio - Final Project, Security and Release Report - 25 August 2026</footer>
+
+  <section class="cover">
+    <div class="eyebrow">FINAL PRODUCT REPORT</div>
+    <h1>World Radio</h1>
+    <div class="rule"></div>
+    <p class="subtitle">Architecture, functionality, user experience, security posture, quality verification, release readiness and operational handoff.</p>
+    <div class="meta">
+      <p><strong>Version:</strong> 1.0.0+1</p>
+      <p><strong>Framework:</strong> Flutter 3.47.1 / Dart 3.13.1</p>
+      <p><strong>Report date:</strong> 25 August 2026</p>
+      <p><strong>Repository:</strong> github.com/sahan8/world_radio</p>
+      <p><strong>Assessment:</strong> Production candidate; store signing credentials remain an owner-controlled publishing gate.</p>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>1. Executive summary</h2>
+    <p>World Radio is a cross-platform live-radio application that discovers stations through the public Radio Browser directory and provides background playback, search, discovery, favorites, history, theming, sleep timing and resilient playback controls.</p>
+    <p>The product has been taken from Flutter starter state to a cohesive release candidate with a responsive neumorphic interface, platform metadata, persistent local preferences, error handling, automated tests, and verified web, Windows and Android development artifacts.</p>
+
+    <div class="callout good"><strong>Quality result:</strong> Dart analysis reports no issues. All 14 automated tests pass. Hardened web and Windows release builds complete successfully, and the Android debug package builds successfully.</div>
+    <div class="callout warn"><strong>Publishing gate:</strong> Android release packaging intentionally fails until the product owner supplies a private upload keystore. This prevents accidental distribution of a debug-signed release. iOS signing and a physical iOS build require Apple credentials and macOS/Xcode.</div>
+
+    <h3>Release-readiness snapshot</h3>
+    <table>
+      <tr><th>Area</th><th>Status</th><th>Notes</th></tr>
+      <tr><td>Application code</td><td><span class="status pass">PASS</span></td><td>57 Dart source files; 6,276 library lines.</td></tr>
+      <tr><td>Automated verification</td><td><span class="status pass">PASS</span></td><td>14 tests across controller, widget, responsive, failure and security behavior.</td></tr>
+      <tr><td>Web release</td><td><span class="status pass">PASS</span></td><td>Release bundle generated with deployable security-header policy.</td></tr>
+      <tr><td>Windows release</td><td><span class="status pass">PASS</span></td><td>Release executable and runtime bundle generated.</td></tr>
+      <tr><td>Android functional package</td><td><span class="status pass">PASS</span></td><td>Debug APK generated for device acceptance testing.</td></tr>
+      <tr><td>Android store bundle</td><td><span class="status gate">OWNER GATE</span></td><td>Private keystore and key.properties required.</td></tr>
+      <tr><td>iOS store archive</td><td><span class="status gate">OWNER GATE</span></td><td>Apple team, final bundle ID, certificates and macOS/Xcode required.</td></tr>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>2. Product scope and user experience</h2>
+    <div class="grid">
+      <div class="card"><h3>Home</h3><p>Featured live receiver, popular stations, search entry, country discovery, genre browsing and listening history.</p></div>
+      <div class="card"><h3>Explore</h3><p>Responsive country, genre and language directories with animated category switching.</p></div>
+      <div class="card"><h3>Search</h3><p>Debounced directory search, filters, quick suggestions, pagination, empty states and retry behavior.</p></div>
+      <div class="card"><h3>Saved</h3><p>Local favorites with immediate add/remove behavior and queue-aware station playback.</p></div>
+      <div class="card"><h3>Player</h3><p>Background audio, play/pause, previous/next, retry, volume, favorite, copy-link and real sleep timer.</p></div>
+      <div class="card"><h3>Settings</h3><p>System/light/dark appearance, listening-history management, privacy information and responsive layout.</p></div>
+    </div>
+
+    <h3>Design system</h3>
+    <p>The interface uses a monochrome receiver-inspired identity with reusable color, typography, radius, motion and neumorphic depth tokens. Raised and pressed surfaces use paired shadows and controlled contrast in both brightness modes. Interaction motion respects reduced-animation preferences.</p>
+    <ul>
+      <li>Maximum content widths preserve readability on tablets and desktop.</li>
+      <li>Navigation remains reachable while the mini-player presents active playback.</li>
+      <li>Custom controls include semantic labels and state descriptions.</li>
+      <li>Approved mobile frames from 360 x 800 through 430 x 932 are regression-tested.</li>
+      <li>Brightness and increased text scaling are included in widget tests.</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <h2>3. Technical architecture</h2>
+    <h3>Layering</h3>
+    <table>
+      <tr><th>Layer</th><th>Responsibilities</th></tr>
+      <tr><td>Presentation</td><td>Flutter screens, reusable widgets, responsive layout, motion, accessibility and navigation.</td></tr>
+      <tr><td>Application</td><td>Player, home, search, library and theme controllers based on ChangeNotifier and inherited scopes.</td></tr>
+      <tr><td>Domain</td><td>Validated immutable radio-station model and display-derived properties.</td></tr>
+      <tr><td>Data</td><td>Radio Browser HTTP client, shared-preference storage, in-memory test fallback and audio handler.</td></tr>
+      <tr><td>Platform</td><td>audio_service, just_audio, audio_session, Android foreground media service, iOS background audio and web/desktop runners.</td></tr>
+    </table>
+
+    <h3>Primary data flow</h3>
+    <ol>
+      <li>The application requests a bounded station page from the HTTPS Radio Browser endpoint.</li>
+      <li>Response objects are parsed, deduplicated and rejected unless their stream URL passes strict public-HTTPS validation.</li>
+      <li>The player converts a selected station to a MediaItem and supplies the validated stream to just_audio.</li>
+      <li>Playback state is broadcast through audio_service and reflected in the mini-player, full player and platform notification.</li>
+      <li>Favorites, recent stations, last station and theme mode persist locally through asynchronous platform preferences.</li>
+    </ol>
+
+    <h3>Dependency baseline</h3>
+    <table>
+      <tr><th>Package</th><th>Version / constraint</th><th>Purpose</th></tr>
+      <tr><td>http</td><td>^1.6.0</td><td>Directory API requests</td></tr>
+      <tr><td>just_audio</td><td>0.10.6</td><td>Cross-platform stream playback</td></tr>
+      <tr><td>audio_service</td><td>0.18.19</td><td>Background media and system controls</td></tr>
+      <tr><td>audio_session</td><td>0.2.4</td><td>Audio-focus and noisy-device behavior</td></tr>
+      <tr><td>shared_preferences</td><td>2.5.5</td><td>Non-sensitive local preferences</td></tr>
+      <tr><td>flutter_lints</td><td>^6.0.0</td><td>Static quality rules</td></tr>
+    </table>
+    <p class="small">All direct dependencies were current during the final audit. OSV returned no known vulnerabilities across 77 resolved hosted packages.</p>
+  </section>
+
+  <section class="page">
+    <h2>4. Security and privacy assessment</h2>
+    <h3>Implemented controls</h3>
+    <table>
+      <tr><th>Control</th><th>Implementation</th></tr>
+      <tr><td>Transport security</td><td>Directory, station streams and artwork require HTTPS. Android cleartext traffic is disabled and the iOS arbitrary-media ATS exception was removed.</td></tr>
+      <tr><td>Destination validation</td><td>Rejects malformed URLs, embedded credentials, localhost, .local domains, loopback, RFC1918 private IPv4, link-local, multicast, private IPv6 and mapped private IPv4.</td></tr>
+      <tr><td>Secret management</td><td>.env, signing properties, keystores, certificates and private-key patterns are ignored. A tracked .env.example contains public configuration only.</td></tr>
+      <tr><td>Fail-closed signing</td><td>Android release tasks stop immediately when the ignored private signing configuration is absent.</td></tr>
+      <tr><td>Web policy</td><td>Baseline CSP, HSTS, no-sniff, no-frame, referrer and permissions headers are provided in web/_headers.</td></tr>
+      <tr><td>Minimal permissions</td><td>Android requests internet, wake-lock and foreground media playback permissions only.</td></tr>
+      <tr><td>Local privacy</td><td>No accounts, advertising SDK, analytics, location, camera, microphone or contacts. Favorites and history remain on device.</td></tr>
+      <tr><td>Logging</td><td>Errors contain station title and host but do not print credentials, tokens or full URLs.</td></tr>
+    </table>
+
+    <h3>Audit evidence</h3>
+    <ul>
+      <li>No API keys, passwords, tokens, private keys, certificates or keystores were found in tracked files or Git history.</li>
+      <li>The Radio Browser endpoint and user-agent are public client configuration, not credentials.</li>
+      <li>The exported Android audio service and media receiver match audio_service integration requirements.</li>
+      <li>shared_preferences stores only non-critical station selections and appearance settings.</li>
+      <li>Security validation is independently exercised by four focused SafeUri test groups.</li>
+    </ul>
+
+    <div class="callout warn"><strong>Residual limitation:</strong> Client-side host checks cannot fully defeat DNS rebinding after hostname resolution. Stronger enforcement would require a controlled backend proxy that resolves and filters destinations before relaying streams. This product deliberately avoids a backend and accepts that bounded residual risk.</div>
+  </section>
+
+  <section class="page">
+    <h2>5. Reliability, accessibility and testing</h2>
+    <h3>Reliability behavior</h3>
+    <ul>
+      <li>Directory requests use bounded page sizes and 12-second timeouts.</li>
+      <li>Search debouncing and request identifiers prevent stale responses from overwriting current results.</li>
+      <li>Controllers close HTTP clients, timers and stream subscriptions on disposal.</li>
+      <li>Audio preparation times out after 15 seconds and presents retry/next-station recovery.</li>
+      <li>Storage corruption is skipped or cleared without preventing application startup.</li>
+      <li>Sleep timer cancellation and disposal prevent orphaned timers.</li>
+    </ul>
+
+    <h3>Automated test inventory</h3>
+    <table>
+      <tr><th>Category</th><th>Coverage</th></tr>
+      <tr><td>Library</td><td>Favorite persistence/deduplication and bounded recent-history ordering.</td></tr>
+      <tr><td>Navigation</td><td>Every primary destination opens and remains accessible.</td></tr>
+      <tr><td>Responsive UI</td><td>Home scrolling, Explore switching and five approved mobile frame sizes.</td></tr>
+      <tr><td>Playback failure</td><td>Invalid stream produces recoverable mini/full player error state.</td></tr>
+      <tr><td>Accessibility</td><td>Interactive UI remains visible across light/dark modes and 1.4x text scale.</td></tr>
+      <tr><td>Settings</td><td>Narrow-screen rendering and theme switching without Material or overflow exceptions.</td></tr>
+      <tr><td>Timer</td><td>Sleep timer expires, pauses through the handler and resets its state.</td></tr>
+      <tr><td>URL security</td><td>Public HTTPS acceptance and rejection of HTTP, credentials, local/private, malformed and unsupported targets.</td></tr>
+    </table>
+
+    <div class="callout good"><strong>Final automated result:</strong> 14 tests passed; Dart analyzer reported no issues; git diff whitespace validation passed.</div>
+  </section>
+
+  <section class="page">
+    <h2>6. Build and deployment report</h2>
+    <table>
+      <tr><th>Target</th><th>Result</th><th>Artifact / requirement</th></tr>
+      <tr><td>Web release</td><td><span class="status pass">BUILT</span></td><td>build/web; includes _headers policy. Host exclusively over HTTPS.</td></tr>
+      <tr><td>Windows x64 release</td><td><span class="status pass">BUILT</span></td><td>build/windows/x64/runner/Release; distribute the complete Release directory.</td></tr>
+      <tr><td>Android debug</td><td><span class="status pass">BUILT</span></td><td>build/app/outputs/flutter-apk/app-debug.apk; device testing only.</td></tr>
+      <tr><td>Android release</td><td><span class="status gate">BLOCKED SAFELY</span></td><td>Requires owner upload keystore. Obsolete debug-signed AAB was removed.</td></tr>
+      <tr><td>iOS release</td><td><span class="status gate">OWNER GATE</span></td><td>Requires Apple Developer team, final bundle identifier, distribution profile and macOS/Xcode.</td></tr>
+      <tr><td>macOS release</td><td><span class="status gate">PLATFORM GATE</span></td><td>Requires macOS build host and network-client entitlement review.</td></tr>
+    </table>
+
+    <h3>Owner action: Android store signing</h3>
+    <p>Create and securely back up a private upload key, then create ignored <code>android/key.properties</code>:</p>
+    <pre>storeFile=C:/secure/location/world-radio-upload.jks
+storePassword=OWNER_SECRET
+keyAlias=world-radio-upload
+keyPassword=OWNER_SECRET</pre>
+    <p>Then build:</p>
+    <pre>flutter build appbundle --release --dart-define-from-file=.env</pre>
+    <p>Never commit the keystore or key.properties. Store encrypted backups in at least two owner-controlled locations.</p>
+
+    <h3>Owner action: web deployment</h3>
+    <ol>
+      <li>Deploy the entire build/web directory to an HTTPS-only static host.</li>
+      <li>Confirm the host applies web/_headers; configure equivalent headers manually if unsupported.</li>
+      <li>Verify CSP in browser developer tools and test station playback from the production origin.</li>
+      <li>Enable immutable caching for hashed assets while keeping index.html revalidated.</li>
+    </ol>
+  </section>
+
+  <section class="page">
+    <h2>7. Configuration and operations</h2>
+    <h3>Local configuration</h3>
+    <p>The ignored .env file contains public build configuration:</p>
+    <pre>RADIO_API_BASE_URL=https://de1.api.radio-browser.info
+RADIO_API_USER_AGENT=WorldRadio/1.0 Flutter</pre>
+    <p>Run and build with <code>--dart-define-from-file=.env</code>. Values compiled into Flutter clients are observable and must never contain private credentials.</p>
+
+    <h3>Standard verification commands</h3>
+    <pre>flutter pub get
+dart analyze
+flutter test --no-pub --dart-define-from-file=.env
+flutter build web --release --no-pub --dart-define-from-file=.env
+flutter build windows --release --no-pub --dart-define-from-file=.env
+flutter build appbundle --release --no-pub --dart-define-from-file=.env</pre>
+
+    <h3>Monitoring recommendations</h3>
+    <ul>
+      <li>Run analysis and tests on every pull request.</li>
+      <li>Run dependency-outdated and OSV checks on a scheduled basis.</li>
+      <li>Track directory request failures, stream preparation failures and crash-free sessions without logging station URLs or user history.</li>
+      <li>Test current Android/iOS releases after Flutter, audio_service or just_audio upgrades.</li>
+      <li>Rotate store credentials only through the platform-supported process and preserve historical signing continuity.</li>
+    </ul>
+
+    <h3>Known product tradeoff</h3>
+    <p>Strict HTTPS improves confidentiality and integrity but excludes legacy stations that publish only HTTP streams. This is intentional for the final secure baseline. If compatibility becomes a business requirement, introduce a controlled HTTPS relay rather than re-enabling arbitrary cleartext traffic in the client.</p>
+  </section>
+
+  <section class="page">
+    <h2>8. Final acceptance checklist</h2>
+    <table>
+      <tr><th>Item</th><th>State</th></tr>
+      <tr><td>Product features implemented and integrated</td><td><span class="status pass">COMPLETE</span></td></tr>
+      <tr><td>Neumorphic responsive UI across primary experiences</td><td><span class="status pass">COMPLETE</span></td></tr>
+      <tr><td>Runtime Material ancestry defects resolved</td><td><span class="status pass">COMPLETE</span></td></tr>
+      <tr><td>HTTPS-only and public-destination validation</td><td><span class="status pass">COMPLETE</span></td></tr>
+      <tr><td>Secret patterns and Git history reviewed</td><td><span class="status pass">COMPLETE</span></td></tr>
+      <tr><td>Dependency currency and advisory scan</td><td><span class="status pass">COMPLETE</span></td></tr>
+      <tr><td>Analysis and automated tests</td><td><span class="status pass">COMPLETE</span></td></tr>
+      <tr><td>Web, Windows and Android device-test artifacts</td><td><span class="status pass">COMPLETE</span></td></tr>
+      <tr><td>Private Android upload signing</td><td><span class="status gate">OWNER REQUIRED</span></td></tr>
+      <tr><td>Apple signing and physical-device acceptance</td><td><span class="status gate">OWNER REQUIRED</span></td></tr>
+      <tr><td>Store listings, privacy URL and screenshots</td><td><span class="status gate">OWNER REQUIRED</span></td></tr>
+    </table>
+
+    <div class="callout good"><strong>Conclusion:</strong> World Radio is a tested, hardened production candidate. No known code, dependency or repository-secret issue blocks controlled beta testing. Public-store delivery is intentionally gated only by private owner credentials, platform account setup and final physical-device acceptance.</div>
+
+    <h3>Reference guidance</h3>
+    <ul>
+      <li><a href="https://developer.android.com/privacy-and-security/risks/cleartext-communications">Android cleartext communication risks</a></li>
+      <li><a href="https://developer.android.com/privacy-and-security/security-config">Android Network Security Configuration</a></li>
+      <li><a href="https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity">Apple App Transport Security</a></li>
+      <li><a href="https://pub.dev/packages/audio_service">audio_service platform setup</a></li>
+      <li><a href="https://pub.dev/documentation/shared_preferences/latest/">shared_preferences storage characteristics</a></li>
+      <li><a href="https://osv.dev/">Open Source Vulnerabilities database</a></li>
+    </ul>
+  </section>
+</body>
+</html>

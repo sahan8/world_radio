@@ -2,11 +2,16 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-
 class RadioWaveform extends StatefulWidget {
-  const RadioWaveform({required this.playing, super.key});
+  const RadioWaveform({
+    required this.playing,
+    this.buffering = false,
+    this.error = false,
+    super.key,
+  });
   final bool playing;
+  final bool buffering;
+  final bool error;
   @override
   State<RadioWaveform> createState() => _RadioWaveformState();
 }
@@ -35,7 +40,9 @@ class _RadioWaveformState extends State<RadioWaveform>
   }
 
   void _sync() {
-    if (widget.playing && !MediaQuery.disableAnimationsOf(context)) {
+    if ((widget.playing || widget.buffering) &&
+        !widget.error &&
+        !MediaQuery.disableAnimationsOf(context)) {
       _controller.repeat();
     } else {
       _controller.stop();
@@ -55,24 +62,49 @@ class _RadioWaveformState extends State<RadioWaveform>
       animation: _controller,
       builder: (_, _) => CustomPaint(
         size: const Size(double.infinity, 50),
-        painter: _WavePainter(_controller.value),
+        painter: _WavePainter(
+          _controller.value,
+          playing: widget.playing,
+          buffering: widget.buffering,
+          error: widget.error,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
       ),
     ),
   );
 }
 
 class _WavePainter extends CustomPainter {
-  _WavePainter(this.phase);
+  _WavePainter(
+    this.phase, {
+    required this.playing,
+    required this.buffering,
+    required this.error,
+    required this.color,
+  });
   final double phase;
+  final bool playing;
+  final bool buffering;
+  final bool error;
+  final Color color;
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.textPrimary
+      ..color = color
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.square;
     for (var i = 0; i < 24; i++) {
       final x = size.width * i / 23;
-      final h = 7 + 30 * (.5 + .5 * math.sin(i * 1.17 + phase * math.pi * 2));
+      final activity = error
+          ? 0.0
+          : buffering
+          ? .28
+          : playing
+          ? 1.0
+          : .18;
+      final h =
+          4 +
+          30 * activity * (.5 + .5 * math.sin(i * 1.17 + phase * math.pi * 2));
       canvas.drawLine(
         Offset(x, size.height / 2 - h / 2),
         Offset(x, size.height / 2 + h / 2),
@@ -82,5 +114,10 @@ class _WavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_WavePainter oldDelegate) => oldDelegate.phase != phase;
+  bool shouldRepaint(_WavePainter oldDelegate) =>
+      oldDelegate.phase != phase ||
+      oldDelegate.playing != playing ||
+      oldDelegate.buffering != buffering ||
+      oldDelegate.error != error ||
+      oldDelegate.color != color;
 }

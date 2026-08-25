@@ -1,12 +1,12 @@
 {
-    "name": "world_radio",
-    "short_name": "world_radio",
+    "name": "World Radio",
+    "short_name": "World Radio",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#17191D",
+    "theme_color": "#17191D",
+    "description": "Discover and listen to live radio stations from around the world.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

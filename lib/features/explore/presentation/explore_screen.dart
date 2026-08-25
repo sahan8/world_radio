@@ -7,7 +7,6 @@ import '../data/explore_data.dart';
 import 'widgets/country_card.dart';
 import 'widgets/discovery_selector.dart';
 import 'widgets/explore_header.dart';
-import 'widgets/featured_destination_card.dart';
 import 'widgets/genre_card.dart';
 import 'widgets/language_tile.dart';
 
@@ -34,9 +33,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         const SliverPadding(
           padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
           sliver: SliverToBoxAdapter(
-            child: SearchEntryBar(
-              hint: 'Search countries, genres, languages...',
-            ),
+            child: SearchEntryBar(hint: 'Search global radio...'),
           ),
         ),
         SliverPadding(
@@ -46,16 +43,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
               selected: _selectedCategory,
               onSelected: (category) =>
                   setState(() => _selectedCategory = category),
-            ),
-          ),
-        ),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
-          sliver: SliverToBoxAdapter(
-            child: FeaturedDestinationCard(
-              city: 'TOKYO',
-              country: 'Japan',
-              stationCount: 124,
             ),
           ),
         ),

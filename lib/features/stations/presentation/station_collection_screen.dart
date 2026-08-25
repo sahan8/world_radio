@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../data/radio_browser_service.dart';
 import '../domain/radio_station.dart';
 import '../../search/presentation/widgets/search_result_tile.dart';
+import '../../../widgets/visuals/radio_visuals.dart';
 
-enum StationCollectionType { country, genre, language }
+enum StationCollectionType { popular, country, genre, language }
 
 class StationCollectionScreen extends StatefulWidget {
   const StationCollectionScreen({
@@ -62,6 +63,9 @@ class _StationCollectionScreenState extends State<StationCollectionScreen> {
     });
     try {
       final values = switch (widget.type) {
+        StationCollectionType.popular => await _service.getPopularStations(
+          offset: more ? _stations.length : 0,
+        ),
         StationCollectionType.country =>
           await _service.getStationsByCountryCode(
             widget.value,
@@ -107,7 +111,7 @@ class _StationCollectionScreenState extends State<StationCollectionScreen> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(widget.title.toUpperCase())),
     body: _loading
-        ? const Center(child: CircularProgressIndicator())
+        ? const Center(child: SignalLoader())
         : _error && _stations.isEmpty
         ? _CollectionMessage(
             icon: Icons.signal_wifi_connected_no_internet_4,
@@ -131,7 +135,7 @@ class _StationCollectionScreenState extends State<StationCollectionScreen> {
               itemBuilder: (_, index) => index == _stations.length
                   ? const Padding(
                       padding: EdgeInsets.all(20),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(child: SignalLoader()),
                     )
                   : SearchResultTile(
                       station: _stations[index],

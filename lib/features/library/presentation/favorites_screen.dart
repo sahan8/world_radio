@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../search/presentation/widgets/search_result_tile.dart';
 import '../application/library_controller.dart';
+import '../../../core/motion/app_motion.dart';
+import '../../../widgets/visuals/radio_visuals.dart';
+import '../../../widgets/visuals/dot_matrix_text.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
@@ -15,31 +18,21 @@ class FavoritesScreen extends StatelessWidget {
         const SliverPadding(
           padding: EdgeInsets.fromLTRB(24, 32, 24, 8),
           sliver: SliverToBoxAdapter(
-            child: Text('YOUR SIGNALS', style: AppTextStyles.caption),
+            child: Text('MODULE 04', style: AppTextStyles.caption),
           ),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
           sliver: SliverToBoxAdapter(
-            child: Text(
-              'FAVORITES',
-              style: Theme.of(context).textTheme.displayMedium,
+            child: SizedBox(
+              height: 36,
+              child: DotMatrixText('SAVED', fontSize: 34),
             ),
           ),
         ),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
-          sliver: SliverToBoxAdapter(
-            child: Text(
-              'Your saved frequencies.',
-              style: AppTextStyles.bodyLarge,
-            ),
-          ),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
         if (!library.loaded)
-          const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()),
-          )
+          const SliverFillRemaining(child: Center(child: SignalLoader()))
         else if (library.favorites.isEmpty)
           const SliverFillRemaining(
             hasScrollBody: false,
@@ -52,7 +45,7 @@ class FavoritesScreen extends StatelessWidget {
               itemCount: library.favorites.length,
               separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (_, index) => AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
+                duration: AppMotion.responsive(context, AppMotion.quick),
                 child: SearchResultTile(
                   key: ValueKey(library.favorites[index].id),
                   station: library.favorites[index],
@@ -75,19 +68,15 @@ class _EmptyFavorites extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.radio_outlined, size: 52),
+          const DotHeart(size: 112),
           const SizedBox(height: 16),
           Text(
-            'NO SAVED SIGNALS',
+            'NO SAVED\nSTATIONS',
             style: Theme.of(context).textTheme.headlineMedium,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Save stations you want to tune into again.',
-            style: AppTextStyles.body,
-            textAlign: TextAlign.center,
-          ),
+          const SizedBox(height: 16),
+          const Text('EXPLORE →', style: AppTextStyles.caption),
         ],
       ),
     ),

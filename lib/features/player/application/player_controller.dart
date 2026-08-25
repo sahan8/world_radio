@@ -22,6 +22,7 @@ class PlayerController extends ChangeNotifier {
   PlaybackState _playbackState = PlaybackState();
   double _volume = .72;
   String _sleepTimer = 'Off';
+  Timer? _sleepTimerTask;
 
   RadioStation? get currentStation => _currentStation;
   String get streamUrl => _currentStation?.streamUrl ?? '';
@@ -87,8 +88,18 @@ class PlayerController extends ChangeNotifier {
     await _handler.customAction('setVolume', {'value': _volume});
   }
 
-  void setSleepTimer(String value) {
-    _sleepTimer = value;
+  void setSleepTimer(String label, Duration? duration) {
+    _sleepTimerTask?.cancel();
+    _sleepTimerTask = null;
+    _sleepTimer = duration == null ? 'Off' : label;
+    if (duration != null) {
+      _sleepTimerTask = Timer(duration, () async {
+        await _handler.pause();
+        _sleepTimer = 'Off';
+        _sleepTimerTask = null;
+        notifyListeners();
+      });
+    }
     notifyListeners();
   }
 
@@ -142,6 +153,7 @@ class PlayerController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _sleepTimerTask?.cancel();
     _playbackSubscription.cancel();
     _mediaSubscription.cancel();
     super.dispose();

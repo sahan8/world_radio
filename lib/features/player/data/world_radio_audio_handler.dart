@@ -5,6 +5,8 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../../../core/security/safe_uri.dart';
+
 class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
   WorldRadioAudioHandler({AudioPlayer? player})
     : _player =
@@ -59,7 +61,7 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
       if (generation != _generation) {
         return;
       }
-      _player.play();
+      await _player.play();
     } on PlayerInterruptedException {
       if (generation == _generation) {
         _publishError();
@@ -82,7 +84,7 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
         _player.processingState == ProcessingState.completed) {
       await playMediaItem(item);
     } else {
-      _player.play();
+      await _player.play();
     }
   }
 
@@ -190,12 +192,8 @@ class WorldRadioAudioHandler extends BaseAudioHandler with QueueHandler {
   }
 
   Uri _validatedUri(String rawUrl) {
-    final uri = Uri.tryParse(rawUrl.trim());
-    if (uri == null ||
-        !uri.hasAuthority ||
-        (uri.scheme != 'http' && uri.scheme != 'https')) {
-      throw const FormatException('Invalid radio stream URL');
-    }
+    final uri = SafeUri.publicHttps(rawUrl);
+    if (uri == null) throw const FormatException('Unsafe radio stream URL');
     return uri;
   }
 

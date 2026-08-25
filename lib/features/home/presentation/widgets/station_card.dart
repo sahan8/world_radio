@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/motion/app_motion.dart';
+import '../../../../widgets/visuals/radio_visuals.dart';
+import '../../../../widgets/controls/themed_play_button.dart';
 import '../../../player/application/player_controller.dart';
 import '../../../library/application/library_controller.dart';
 import '../../../stations/domain/radio_station.dart';
@@ -19,104 +20,104 @@ class StationCard extends StatelessWidget {
     final player = PlayerScope.of(context);
     final library = LibraryScope.of(context);
     final current = player.currentStation?.id == station.id;
-    return InkWell(
-      onTap: () => player.select(station, queue: queue),
-      borderRadius: BorderRadius.circular(AppRadii.medium),
-      child: Container(
-        width: 184,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 132,
-              width: double.infinity,
-              child: StationThumbnail(station: station),
+    return PressableScale(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          player.select(station, queue: queue);
+        },
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        child: AnimatedContainer(
+          duration: AppMotion.responsive(context, AppMotion.quick),
+          width: 174,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppRadii.medium),
+            border: Border.all(
+              color: current
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Theme.of(context).colorScheme.outline,
+              width: current ? 1.5 : 1,
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: AppColors.textPrimary,
-                    shape: BoxShape.circle,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 92,
+                width: double.infinity,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(AppRadii.small),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: StationThumbnail(station: station),
                   ),
                 ),
-                const SizedBox(width: 6),
-                const Text('LIVE', style: AppTextStyles.caption),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              station.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 2),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    station.displayCountry,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              BroadcastIndicator(active: current && player.isPlaying),
+              const SizedBox(height: 4),
+              Text(
+                station.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      station.displayCountry,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
-                ),
-                IconButton(
-                  tooltip: library.isFavorite(station.id)
-                      ? 'Remove from favorites'
-                      : 'Add to favorites',
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    library.toggleFavorite(station);
-                  },
-                  icon: Icon(
-                    library.isFavorite(station.id)
-                        ? Icons.favorite
-                        : Icons.favorite_border,
+                  SizedBox(
+                    width: 34,
+                    height: 34,
+                    child: IconButton(
+                      tooltip: library.isFavorite(station.id)
+                          ? 'Remove from favorites'
+                          : 'Add to favorites',
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        library.toggleFavorite(station);
+                      },
+                      icon: Icon(
+                        library.isFavorite(station.id)
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
                   ),
-                  constraints: const BoxConstraints.tightFor(
-                    width: 40,
-                    height: 40,
+                  SizedBox(
+                    width: 38,
+                    height: 38,
+                    child: ThemedPlayButton(
+                      onPressed: () => current
+                          ? player.togglePlaying()
+                          : player.select(station, queue: queue),
+                      tooltip: 'Play ${station.name}',
+                      loading: current && player.isLoading,
+                      playing: current && player.isPlaying,
+                      error: player.hasError && current,
+                      size: 38,
+                    ),
                   ),
-                  padding: EdgeInsets.zero,
-                ),
-                IconButton.filled(
-                  onPressed: () => current
-                      ? player.togglePlaying()
-                      : player.select(station, queue: queue),
-                  tooltip: 'Play ${station.name}',
-                  icon: current && player.isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(
-                          current && player.isPlaying
-                              ? Icons.pause
-                              : player.hasError && current
-                              ? Icons.refresh
-                              : Icons.play_arrow,
-                        ),
-                  constraints: const BoxConstraints.tightFor(
-                    width: 44,
-                    height: 44,
-                  ),
-                  padding: EdgeInsets.zero,
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

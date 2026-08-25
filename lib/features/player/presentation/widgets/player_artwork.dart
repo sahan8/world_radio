@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../stations/domain/radio_station.dart';
 
 class PlayerArtwork extends StatelessWidget {
@@ -22,13 +21,20 @@ class PlayerArtwork extends StatelessWidget {
         width: size,
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
-          border: Border.all(color: AppColors.border),
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Stack(
           children: [
-            Positioned.fill(child: CustomPaint(painter: _GridPainter())),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _GridPainter(
+                  border: Theme.of(context).colorScheme.outline,
+                  subtle: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+            ),
             Positioned(
               top: 18,
               left: 18,
@@ -94,10 +100,14 @@ class PlayerArtwork extends StatelessWidget {
 }
 
 class _GridPainter extends CustomPainter {
+  const _GridPainter({required this.border, required this.subtle});
+  final Color border;
+  final Color subtle;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.borderSubtle.withValues(alpha: .28)
+      ..color = subtle.withValues(alpha: .55)
       ..strokeWidth = 1;
     for (double x = 0; x < size.width; x += size.width / 8) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
@@ -111,10 +121,11 @@ class _GridPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1
-        ..color = AppColors.border,
+        ..color = border,
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(_GridPainter oldDelegate) =>
+      oldDelegate.border != border || oldDelegate.subtle != subtle;
 }

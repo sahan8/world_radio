@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import 'world_discovery_visual.dart';
@@ -22,10 +21,10 @@ class FeaturedDestinationCard extends StatelessWidget {
     button: true,
     label: 'Listen live in $city, $country',
     child: Material(
-      color: AppColors.surfaceElevated,
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -63,8 +62,7 @@ class FeaturedDestinationCard extends StatelessWidget {
                       children: [
                         Text(
                           'LISTEN LIVE',
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(color: AppColors.textPrimary),
+                          style: Theme.of(context).textTheme.labelLarge,
                         ),
                         const SizedBox(width: 8),
                         const Icon(Icons.arrow_forward, size: 18),

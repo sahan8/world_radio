@@ -1,3 +1,5 @@
+import '../../../core/security/safe_uri.dart';
+
 class RadioStation {
   const RadioStation({
     required this.stationUuid,
@@ -135,12 +137,6 @@ class RadioStation {
           .take(8)
           .toList(growable: false);
   static String _validUrl(Object? value) {
-    final text = _string(value);
-    final uri = Uri.tryParse(text);
-    return uri != null &&
-            uri.hasScheme &&
-            (uri.scheme == 'http' || uri.scheme == 'https')
-        ? uri.toString()
-        : '';
+    return SafeUri.publicHttps(value)?.toString() ?? '';
   }
 }
