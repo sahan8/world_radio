@@ -4,6 +4,12 @@ A cross-platform Flutter radio receiver for discovering and listening to live
 stations around the world. It uses a responsive monochrome neumorphic interface
 with accessible controls and motion-reduction support.
 
+<p align="center">
+  <img src="screenshots/home.webp" alt="Home" width="260">
+  <img src="screenshots/explore.webp" alt="Explore" width="260">
+  <img src="screenshots/dark.webp" alt="Dark theme, now playing" width="260">
+</p>
+
 ## Features
 
 - Discovery by country, genre, and language
